@@ -35,6 +35,7 @@ func New(source Source) http.Handler {
 	mux.HandleFunc("GET /api/operations", s.withDataset(s.operationReport))
 	mux.HandleFunc("GET /api/returns", s.withDataset(s.returnList))
 	mux.HandleFunc("GET /api/returns/{id}", s.withDataset(s.returnDetail))
+	mux.HandleFunc("GET /api/returns-report", s.withDataset(s.returnReport))
 	mux.HandleFunc("GET /api/snapshot", s.withDataset(func(w http.ResponseWriter, r *http.Request, data domain.Dataset) { writeJSON(w, http.StatusOK, data) }))
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "Маршрут не найден"})
@@ -83,6 +84,51 @@ func (s *Server) operationReport(w http.ResponseWriter, r *http.Request, data do
 		return
 	}
 	writeJSON(w, http.StatusOK, service.NewOperations(service.DatasetSource(data)).Report(filter))
+}
+
+func (s *Server) returnReport(w http.ResponseWriter, r *http.Request, data domain.Dataset) {
+	filter, err := s.filter(r, data.Manifest)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	snapshotAt, err := time.Parse(time.RFC3339, data.Manifest.AsOf)
+	if err != nil {
+		log.Printf("parse dataset as_of: %v", err)
+		writeError(w, http.StatusInternalServerError, "Некорректная дата среза данных")
+		return
+	}
+
+	// Until — начало следующего дня; StockAt использует включительный срез.
+	cutoff := filter.Until.Add(-time.Nanosecond)
+	if cutoff.After(snapshotAt) {
+		cutoff = snapshotAt
+	}
+	if filter.From.After(cutoff) {
+		writeError(w, http.StatusBadRequest, "Выбранный период находится после доступного среза данных")
+		return
+	}
+
+	priorities := service.ReturnPriorities(data, cutoff, filter.SupplierID)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"as_of":                cutoff.Format(time.RFC3339Nano),
+		"stock":                service.StockAt(data, cutoff, filter.SupplierID),
+		"days":                 service.StockTrend(data, filter.From, cutoff, filter.SupplierID),
+		"suppliers":            service.StockBySupplier(data, cutoff, filter.SupplierID),
+		"priorities":           priorities,
+		"total_priority_cases": len(priorities),
+		"priority_rules": map[string]any{
+			"urgent_window_days": service.UrgentReturnWindowDays,
+			"order":              "Сначала срочные случаи, затем сумма остатка по убыванию, возраст по убыванию и идентификатор.",
+		},
+		"limitations": []string{
+			"Очередь включает только товары с положительным остатком на нашем складе. Отправленные товары без складского остатка сюда не входят.",
+			"Срок относится к получению поставщиком. Время доставки неизвестно, поэтому открытое окно не гарантирует своевременное получение.",
+			"Сумма количеств по отказам относится к отправкам и может включать повторные попытки. Это не количество уникальных единиц текущего остатка.",
+			"История изменений качества, комплектности и подтверждения условий отсутствует; для прошлых дат используются сведения из учебного набора.",
+		},
+	})
 }
 
 func (s *Server) returnList(w http.ResponseWriter, r *http.Request, data domain.Dataset) {
