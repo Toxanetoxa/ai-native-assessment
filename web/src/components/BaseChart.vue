@@ -31,9 +31,11 @@ const props = withDefaults(
     labels: string[];
     series: { label: string; values: number[]; color?: string }[];
     unit?: "number" | "rubles";
+    stacked?: boolean;
+    stepped?: boolean;
     label: string;
   }>(),
-  { type: "bar", unit: "number" },
+  { type: "bar", unit: "number", stacked: false, stepped: false },
 );
 const palette = ["#900000", "#527a91", "#b89c69", "#6c8a72"];
 const data = computed(() => ({
@@ -51,11 +53,20 @@ const data = computed(() => ({
     maxBarThickness: 46,
     pointRadius: 2,
     pointHoverRadius: 5,
-    tension: 0.25,
-    fill: props.type === "line",
+    stepped: props.stepped ? ("after" as const) : false,
+    tension: props.stepped ? 0 : 0.25,
+    fill: props.type === "line" && !props.stepped,
   })),
 }));
 const formatter = (value: number) =>
+  props.unit === "rubles"
+    ? new Intl.NumberFormat("ru-RU", {
+        style: "currency",
+        currency: "RUB",
+        maximumFractionDigits: 2,
+      }).format(value)
+    : new Intl.NumberFormat("ru-RU").format(value);
+const axisFormatter = (value: number) =>
   props.unit === "rubles"
     ? `${new Intl.NumberFormat("ru-RU", { notation: "compact", maximumFractionDigits: 1 }).format(value)} ₽`
     : new Intl.NumberFormat("ru-RU").format(value);
@@ -75,6 +86,7 @@ const options = computed(() => ({
   },
   scales: {
     x: {
+      stacked: props.stacked,
       grid: { display: false },
       border: { display: false },
       ticks: {
@@ -84,13 +96,14 @@ const options = computed(() => ({
       },
     },
     y: {
+      stacked: props.stacked,
       beginAtZero: true,
       border: { display: false },
       grid: { color: "#f0f2f4" },
       ticks: {
         color: "#64748b",
         font: { family: "system-ui", size: 11 },
-        callback: (value: string | number) => formatter(Number(value)),
+        callback: (value: string | number) => axisFormatter(Number(value)),
       },
     },
   },

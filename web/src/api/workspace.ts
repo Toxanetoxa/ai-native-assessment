@@ -5,11 +5,14 @@ import type {
   OperationsReport,
   ReturnDetail,
   ReturnRow,
+  ReturnsReport,
 } from "./types";
 
 export const fetchMeta = () => get<Meta>("/meta");
 export const fetchOperations = (filters: Filters, signal?: AbortSignal) =>
   get<OperationsReport>("/operations", { ...filters }, signal);
+export const fetchReturnsReport = (filters: Filters, signal?: AbortSignal) =>
+  get<ReturnsReport>("/returns-report", { ...filters }, signal);
 export const fetchReturns = (
   filters: Filters,
   page: number,

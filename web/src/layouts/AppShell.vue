@@ -13,6 +13,7 @@ const groupOpen = ref(true);
 const navigation = [
   { name: "assignment", label: "Задание", icon: "document" },
   { name: "operations", label: "Операционные показатели", icon: "chart" },
+  { name: "returns", label: "Возвраты", icon: "refresh" },
   { name: "returns-register", label: "Реестр возвратов", icon: "box" },
 ];
 onMounted(() => {

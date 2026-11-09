@@ -32,6 +32,52 @@ export interface OperationsReport {
   days: { date: string; count: number; amount_minor: number }[];
   suppliers: SupplierTotal[];
 }
+export interface StockSummary {
+  value_minor: number;
+  aged_value_minor: number;
+  line_count: number;
+  quantity: number;
+}
+export interface StockDay {
+  date: string;
+  value_minor: number;
+  aged_value_minor: number;
+}
+export interface SupplierStock extends Supplier, StockSummary {
+  age_0_7_minor: number;
+  age_8_30_minor: number;
+  age_31_60_minor: number;
+  age_61_plus_minor: number;
+}
+export interface PriorityCase {
+  id: string;
+  return_id: string;
+  supplier_id: string;
+  supplier_name: string;
+  product: string;
+  stock_quantity: number;
+  stock_value_minor: number;
+  age_days: number;
+  priority: "urgent" | "clarify" | "review";
+  reason: string;
+  next_action: string;
+  deadline_date: string | null;
+  days_remaining: number | null;
+  rejected_quantity: number;
+}
+export interface ReturnsReport {
+  as_of: string;
+  stock: StockSummary;
+  days: StockDay[];
+  suppliers: SupplierStock[];
+  priorities: PriorityCase[];
+  total_priority_cases: number;
+  priority_rules: {
+    urgent_window_days: number;
+    order: string;
+  };
+  limitations: string[];
+}
 export interface ReturnRow {
   id: string;
   return_id: string;

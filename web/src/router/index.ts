@@ -17,6 +17,12 @@ export default createRouter({
       meta: { title: "Операционные показатели" },
     },
     {
+      path: "/returns",
+      name: "returns",
+      component: () => import("../pages/ReturnsPage.vue"),
+      meta: { title: "Возвраты" },
+    },
+    {
       path: "/returns-register",
       name: "returns-register",
       component: () => import("../pages/RegisterPage.vue"),
