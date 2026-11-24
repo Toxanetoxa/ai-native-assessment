@@ -82,17 +82,24 @@ npx vitest run --environment jsdom
 
 GitHub Pages раздаёт статические файлы. Для публичного демо достаточно сборки Vue с моками. Для работы с общей базой Go API и MySQL потребуется запустить на сервере или контейнерной платформе. [Документация GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
 
-Демо публикуется из корня ветки `main` в отдельном публичном репозитории. Туда попадают содержимое `web/dist/` и файл `.nojekyll`. Чтобы обновить сайт, выполните из корня проекта команды ниже. Для отправки по SSH потребуется доступ на запись в репозиторий демо. [Репозиторий демо](https://github.com/Toxanetoxa/ai-native-assessment-demo)
+Каждый push в `main` приватного репозитория `Toxanetoxa/ai-native-assessment` запускает сборку демо в GitHub Actions. Чтобы запустить её вручную, откройте workflow и выберите **Run workflow → main → Run workflow**. [Сборка демо в GitHub Actions](https://github.com/Toxanetoxa/ai-native-assessment/actions/workflows/pages.yml)
+
+1. В приватном репозитории CI запускает тесты фронтенда, проверяет TypeScript и собирает Vue с `VITE_API_MODE=mock`. Готовые файлы из `web/dist/` попадают в каталог `site/` ветки `main` публичного репозитория `Toxanetoxa/ai-native-assessment-demo`.
+2. Push с новой сборкой запускает workflow публичного репозитория. Он упаковывает `site/` с помощью `actions/upload-pages-artifact` и публикует его через `actions/deploy-pages`. Ссылку на выпущенную версию можно открыть в завершённом запуске. [История публикаций](https://github.com/Toxanetoxa/ai-native-assessment-demo/actions/workflows/pages.yml)
+
+| Где настроено | Параметр | Назначение |
+| --- | --- | --- |
+| Приватный репозиторий → Settings → Secrets and variables → Actions → Variables | `PAGES_REPOSITORY` | Значение `Toxanetoxa/ai-native-assessment-demo` задаёт репозиторий назначения и префикс URL для сборки. |
+| Приватный репозиторий → Settings → Secrets and variables → Actions → Secrets | `PAGES_DEPLOY_KEY` | Закрытая часть SSH-ключа для отправки сборки. |
+| Публичный репозиторий → Settings → Deploy keys | Ключ с правом **Allow write access** | Открытая часть той же пары ключей. Доступ на запись ограничен репозиторием демо. |
+| Публичный репозиторий → Settings → Pages → Build and deployment | **Source → GitHub Actions** | Источником публикации служит артефакт workflow. |
+
+Чтобы проверить ту же сборку локально, выполните из `web/` следующие команды.
 
 ```sh
-make web-install
-make publish-demo
-```
-
-Чтобы проверить сборку локально, выполните следующую команду в `web/`.
-
-```sh
+npm ci
 VITE_API_MODE=mock npm run build -- --base /ai-native-assessment-demo/
+npx vite preview --base /ai-native-assessment-demo/
 ```
 
-Результат находится в `web/dist/`. Параметр `--base` задаёт префикс ресурсов, а адреса вида `/ai-native-assessment-demo/#/returns` позволяют открыть раздел демо по прямой ссылке или обновить страницу.
+Откройте выведенный Vite адрес с путём `/ai-native-assessment-demo/#/returns`. Параметр `--base` задаёт префикс ресурсов, а маршрут после `#` позволяет обновить страницу или передать ссылку на нужный раздел.

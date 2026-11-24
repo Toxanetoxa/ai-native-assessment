@@ -5,7 +5,7 @@ GO ?= go
 NPM ?= npm
 SERVICE ?=
 
-.PHONY: help up down restart build logs ps config test vet web-install typecheck check db-shell publish-demo
+.PHONY: help up down restart build logs ps config test vet web-install typecheck check db-shell
 
 help: ## Показать доступные команды
 	@awk 'BEGIN {FS = ":.*## "; printf "Использование: make <команда>\n\n"} /^[a-zA-Z_-]+:.*## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -43,10 +43,6 @@ web-install: ## Установить зависимости фронтенда �
 
 typecheck: ## Проверить TypeScript (сначала make web-install)
 	$(NPM) --prefix web run typecheck
-
-publish-demo: ## Собрать фронтенд с моками и обновить GitHub Pages
-	VITE_API_MODE=mock $(NPM) --prefix web run build -- --base /ai-native-assessment-demo/
-	sh scripts/publish-demo.sh
 
 check: config test vet typecheck ## Проверить Compose, Go и TypeScript
 
