@@ -2,7 +2,7 @@
 
 Рабочее место сотрудника склада и коммерческого отдела. По нему можно узнать, на какую сумму возвраты остались на складе, какие позиции стоит разобрать сегодня и что уже произошло с конкретным возвратом.
 
-[Открыть демо на GitHub Pages](https://toxanetoxa.github.io/ai-native-assessment-demo/)
+[Открыть демо на GitHub Pages](https://toxanetoxa.github.io/ai-native-assessment/)
 
 ## Что посмотреть в демо
 
@@ -82,24 +82,16 @@ npx vitest run --environment jsdom
 
 GitHub Pages раздаёт статические файлы. Для публичного демо достаточно сборки Vue с моками. Для работы с общей базой Go API и MySQL потребуется запустить на сервере или контейнерной платформе. [Документация GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
 
-Каждый push в `main` приватного репозитория `Toxanetoxa/ai-native-assessment` запускает сборку демо в GitHub Actions. Чтобы запустить её вручную, откройте workflow и выберите **Run workflow → main → Run workflow**. [Сборка демо в GitHub Actions](https://github.com/Toxanetoxa/ai-native-assessment/actions/workflows/pages.yml)
+Каждый push в `main` репозитория `Toxanetoxa/ai-native-assessment` запускает workflow `.github/workflows/pages.yml`. Он выполняет тесты фронтенда, проверяет TypeScript и собирает Vue с `VITE_API_MODE=mock`. После успешной сборки GitHub Actions передаёт каталог `web/dist/` в `actions/upload-pages-artifact` и публикует его через `actions/deploy-pages` на Pages этого же репозитория. [История публикаций](https://github.com/Toxanetoxa/ai-native-assessment/actions/workflows/pages.yml)
 
-1. В приватном репозитории CI запускает тесты фронтенда, проверяет TypeScript и собирает Vue с `VITE_API_MODE=mock`. Готовые файлы из `web/dist/` попадают в каталог `site/` ветки `main` публичного репозитория `Toxanetoxa/ai-native-assessment-demo`.
-2. Push с новой сборкой запускает workflow публичного репозитория. Он упаковывает `site/` с помощью `actions/upload-pages-artifact` и публикует его через `actions/deploy-pages`. Ссылку на выпущенную версию можно открыть в завершённом запуске. [История публикаций](https://github.com/Toxanetoxa/ai-native-assessment-demo/actions/workflows/pages.yml)
-
-| Где настроено | Параметр | Назначение |
-| --- | --- | --- |
-| Приватный репозиторий → Settings → Secrets and variables → Actions → Variables | `PAGES_REPOSITORY` | Значение `Toxanetoxa/ai-native-assessment-demo` задаёт репозиторий назначения и префикс URL для сборки. |
-| Приватный репозиторий → Settings → Secrets and variables → Actions → Secrets | `PAGES_DEPLOY_KEY` | Закрытая часть SSH-ключа для отправки сборки. |
-| Публичный репозиторий → Settings → Deploy keys | Ключ с правом **Allow write access** | Открытая часть той же пары ключей. Доступ на запись ограничен репозиторием демо. |
-| Публичный репозиторий → Settings → Pages → Build and deployment | **Source → GitHub Actions** | Источником публикации служит артефакт workflow. |
+В **Settings → Pages → Build and deployment → Source** выберите **GitHub Actions**. Workflow использует встроенные разрешения GitHub для публикации. Для ручного запуска откройте историю публикаций и выберите **Run workflow → main → Run workflow**.
 
 Чтобы проверить ту же сборку локально, выполните из `web/` следующие команды.
 
 ```sh
 npm ci
-VITE_API_MODE=mock npm run build -- --base /ai-native-assessment-demo/
-npx vite preview --base /ai-native-assessment-demo/
+VITE_API_MODE=mock npm run build -- --base /ai-native-assessment/
+npx vite preview --base /ai-native-assessment/
 ```
 
-Откройте выведенный Vite адрес с путём `/ai-native-assessment-demo/#/returns`. Параметр `--base` задаёт префикс ресурсов, а маршрут после `#` позволяет обновить страницу или передать ссылку на нужный раздел.
+Откройте выведенный Vite адрес с путём `/ai-native-assessment/#/returns`. Параметр `--base` задаёт префикс ресурсов, а маршрут после `#` позволяет обновить страницу или передать ссылку на нужный раздел.
