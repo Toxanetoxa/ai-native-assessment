@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import assignment from "../../../README.md?raw";
+import readme from "../../../README.md?raw";
 import DashboardLayout from "../layouts/DashboardLayout.vue";
 import Panel from "../components/Panel.vue";
 import MarkdownContent from "../components/MarkdownContent.vue";
 </script>
 
 <template>
-  <DashboardLayout title="Задание" :show-heading="false">
+  <DashboardLayout title="О проекте" :show-heading="false">
     <div class="assignment-page">
-      <Panel><MarkdownContent :source="assignment" :heading-offset="0" /></Panel>
+      <Panel><MarkdownContent :source="readme" :heading-offset="0" /></Panel>
     </div>
   </DashboardLayout>
 </template>

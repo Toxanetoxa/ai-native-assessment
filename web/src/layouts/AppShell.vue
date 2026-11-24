@@ -11,7 +11,7 @@ const { meta, load } = useMeta();
 const minimized = ref(false);
 const groupOpen = ref(true);
 const navigation = [
-  { name: "assignment", label: "Задание", icon: "document" },
+  { name: "assignment", label: "О проекте", icon: "document" },
   { name: "operations", label: "Операционные показатели", icon: "chart" },
   { name: "returns", label: "Возвраты", icon: "refresh" },
   { name: "returns-register", label: "Реестр возвратов", icon: "box" },

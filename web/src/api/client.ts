@@ -3,6 +3,11 @@ export async function get<T>(
   params: Record<string, string | number> = {},
   signal?: AbortSignal,
 ): Promise<T> {
+  if (import.meta.env.VITE_API_MODE === "mock") {
+    const { mockGet } = await import("./mock");
+    signal?.throwIfAborted();
+    return mockGet(path, params) as T;
+  }
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (value !== "") query.set(key, String(value));

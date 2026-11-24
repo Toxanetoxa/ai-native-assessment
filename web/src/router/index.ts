@@ -1,14 +1,16 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
 
 export default createRouter({
-  history: createWebHistory(),
+  history: import.meta.env.VITE_API_MODE === "mock"
+    ? createWebHashHistory(import.meta.env.BASE_URL)
+    : createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: "/", redirect: "/operations" },
     {
       path: "/assignment",
       name: "assignment",
       component: () => import("../pages/AssignmentPage.vue"),
-      meta: { title: "Задание" },
+      meta: { title: "О проекте" },
     },
     {
       path: "/operations",

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from "vue";
 import DashboardLayout from "../layouts/DashboardLayout.vue";
 import Panel from "../components/Panel.vue";
 import FilterBar from "../components/FilterBar.vue";
@@ -24,6 +24,7 @@ const error = ref("");
 const page = ref(1);
 const pageSize = 25;
 const priorityFilter = ref("");
+const analysis = useTemplateRef<HTMLDivElement>("analysis");
 watch(priorityFilter, () => { page.value = 1; });
 let controller: AbortController | undefined;
 let disposed = false;
@@ -223,7 +224,7 @@ function remainingLabel(days: number | null) {
           Очередь предлагает приоритет и следующий шаг. Ответственного, согласованное действие и результат
           фиксируйте в отдельной рабочей таблице пилота.
         </p>
-        <a class="text-link small" href="#returns-analysis">Перейти к графикам</a>
+        <button type="button" class="text-link small" @click="analysis?.focus()">Перейти к графикам</button>
       </div>
 
       <Panel
@@ -305,7 +306,7 @@ function remainingLabel(days: number | null) {
         </template>
       </Panel>
 
-      <div id="returns-analysis" class="charts-grid returns-analysis">
+      <div id="returns-analysis" ref="analysis" tabindex="-1" class="charts-grid returns-analysis">
         <Panel title="Динамика остатков" subtitle="На конец каждого дня · рубли">
           <BaseChart
             type="line"
@@ -367,7 +368,7 @@ function remainingLabel(days: number | null) {
 .returns-context p + p {
   margin-top: 5px;
 }
-.returns-workflow > a {
+.returns-workflow > button {
   display: inline-block;
   margin-top: 5px;
 }
